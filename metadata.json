@@ -1,0 +1,5 @@
+{
+  "name": "JSON Content Generator",
+  "description": "Gere arquivos JSON estruturados para seus aplicativos, como devocionais diários e versículos bíblicos, usando IA.",
+  "requestFramePermissions": []
+}
