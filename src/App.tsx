@@ -156,7 +156,7 @@ export default function App() {
       }
     } catch (err: any) {
       console.error(err);
-      setError('Ocorreu um erro ao gerar o JSON. Verifique suas configurações e tente novamente.');
+      setError(err.message || 'Ocorreu um erro ao gerar o JSON. Verifique suas configurações e tente novamente.');
     } finally {
       setIsGenerating(false);
     }
@@ -215,7 +215,7 @@ export default function App() {
               <FileJson size={24} />
             </div>
             <div>
-              <h1 className="font-semibold text-lg leading-none">Gerador de Arquivos JSON</h1>
+              <h1 className="font-semibold text-lg leading-none">JSON Content Maker</h1>
               <p className={cn(
                 "text-xs mt-1",
                 theme === 'dark' ? "text-white/40" : "text-black/40"
