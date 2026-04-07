@@ -53,8 +53,10 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [modelJSON, setModelJSON] = useState<string>('');
-  const [activeTab, setActiveTab] = useState<'custom' | 'model'>('custom');
+  const [activeTab, setActiveTab] = useState<'custom' | 'model' | 'formatter'>('custom');
   const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [rawText, setRawText] = useState<string>('');
+  const [formatterKey, setFormatterKey] = useState<string>('texto');
   const [showHistory, setShowHistory] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
 
@@ -106,9 +108,24 @@ export default function App() {
 
     try {
       let finalSchema = null;
-      let finalPrompt = `Template: ${template}\nContexto: ${context}\n\nPor favor, gere uma lista de objetos JSON seguindo o esquema definido.`;
+      let finalPrompt = '';
 
-      if (activeTab === 'model' && modelJSON) {
+      if (activeTab === 'formatter') {
+        finalPrompt = `Converta o seguinte texto em um objeto JSON com a chave "${formatterKey}". 
+        IMPORTANTE: Preserve todas as quebras de linha e parágrafos originais usando o caractere "\\n". 
+        O resultado deve ser um objeto JSON válido contendo o texto formatado.
+        
+        Texto para converter:
+        ${rawText}`;
+        
+        finalSchema = {
+          type: 'OBJECT',
+          properties: {
+            [formatterKey]: { type: 'STRING' }
+          },
+          required: [formatterKey]
+        };
+      } else if (activeTab === 'model' && modelJSON) {
         try {
           JSON.parse(modelJSON); // Validate JSON
           finalPrompt = `Baseado no modelo JSON fornecido, gere novos dados para o seguinte contexto: ${context}. 
@@ -122,6 +139,7 @@ export default function App() {
           return;
         }
       } else {
+        finalPrompt = `Template: ${template}\nContexto: ${context}\n\nPor favor, gere uma lista de objetos JSON seguindo o esquema definido.`;
         const properties: any = {};
         fields.forEach(f => {
           properties[f.name] = {
@@ -412,6 +430,17 @@ export default function App() {
             >
               A partir de Modelo
             </button>
+            <button 
+              onClick={() => setActiveTab('formatter')}
+              className={cn(
+                "flex-1 py-2 text-xs font-bold uppercase tracking-wider rounded-xl transition-all",
+                activeTab === 'formatter' 
+                  ? (theme === 'dark' ? "bg-emerald-600 text-white shadow-sm" : "bg-white text-emerald-600 shadow-sm") 
+                  : (theme === 'dark' ? "text-white/40 hover:text-white/60" : "text-black/40 hover:text-black/60")
+              )}
+            >
+              Formatador
+            </button>
           </div>
 
           {/* Section: Template Info */}
@@ -428,6 +457,51 @@ export default function App() {
             </div>
             
             <div className="space-y-4">
+              {activeTab === 'formatter' && (
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className={cn(
+                        "block text-sm font-medium",
+                        theme === 'dark' ? "text-white/70" : "text-black/70"
+                      )}>Texto para Formatar</label>
+                      <button 
+                        onClick={() => setRawText('')}
+                        className="text-[10px] font-bold uppercase text-red-400 hover:text-red-500 flex items-center gap-1"
+                      >
+                        <Eraser size={12} /> Limpar
+                      </button>
+                    </div>
+                    <textarea 
+                      value={rawText}
+                      onChange={(e) => setRawText(e.target.value)}
+                      rows={10}
+                      placeholder="Cole seu texto longo aqui (com parágrafos e quebras de linha)..."
+                      className={cn(
+                        "w-full px-4 py-2.5 border rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all resize-none",
+                        theme === 'dark' ? "bg-white/5 border-white/5 text-white" : "bg-[#F9F9F9] border-black/5 text-[#1A1A1A]"
+                      )}
+                    />
+                  </div>
+                  <div>
+                    <label className={cn(
+                      "block text-sm font-medium mb-1.5",
+                      theme === 'dark' ? "text-white/70" : "text-black/70"
+                    )}>Nome da Chave JSON</label>
+                    <input 
+                      type="text" 
+                      value={formatterKey}
+                      onChange={(e) => setFormatterKey(e.target.value)}
+                      placeholder="Ex: reflexao, conteudo, texto"
+                      className={cn(
+                        "w-full px-4 py-2.5 border rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all",
+                        theme === 'dark' ? "bg-white/5 border-white/5 text-white" : "bg-[#F9F9F9] border-black/5 text-[#1A1A1A]"
+                      )}
+                    />
+                  </div>
+                </div>
+              )}
+
               {activeTab === 'model' && (
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
