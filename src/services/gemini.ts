@@ -23,7 +23,8 @@ export async function generateJSONContent(prompt: string, schema: any, modelCont
   }
 
   const response = await ai.models.generateContent({
-    model: "gemini-3.1-pro-preview",
+    // Alterado para o modelo Flash para evitar erros de cota e aumentar a velocidade
+    model: "gemini-3-flash-preview", 
     contents: fullPrompt,
     config,
   });
